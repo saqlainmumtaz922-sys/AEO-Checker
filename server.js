@@ -68,8 +68,35 @@ function extractText($) {
 function checkMetaTags($) {
   const title = $("title").text().trim();
   const metaDesc = $('meta[name="description"]').attr("content") || "";
-  const h1 = $("h1").first().text().trim();
   const canonical = $('link[rel="canonical"]').attr("href") || "";
+
+  // Try multiple H1 selectors — covers WordPress, GeneratePress, Yoast, custom themes
+  const h1Selectors = [
+    "h1",
+    "h1.entry-title",
+    "h1.post-title",
+    "h1.page-title",
+    ".entry-title",
+    ".post-title",
+    ".page-title",
+    "[itemprop='headline']",
+    ".entry-header h1",
+    "article h1",
+    "#main h1",
+    ".site-main h1",
+    ".content-area h1",
+    ".inside-article h1",
+  ];
+
+  let h1 = "";
+  for (const sel of h1Selectors) {
+    const found = $(sel).first().text().trim();
+    if (found && found.length > 2) {
+      h1 = found;
+      break;
+    }
+  }
+
   return {
     title: { value: title, length: title.length, ok: title.length >= 40 && title.length <= 60 },
     metaDesc: { value: metaDesc.substring(0, 160), length: metaDesc.length, ok: metaDesc.length >= 120 && metaDesc.length <= 160 },
